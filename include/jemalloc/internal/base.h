@@ -6,11 +6,19 @@
 #include "jemalloc/internal/ehooks.h"
 #include "jemalloc/internal/mutex.h"
 
+#ifdef _WIN32
+/*
+ * Windows commits a block in full when mapping it, so keep blocks small: 64 KiB
+ * is also its allocation granularity, so reservations need no realignment.
+ */
+#  define BASE_BLOCK_MIN_ALIGN ((size_t)64 << 10)
+#else
 /*
  * Alignment when THP is not enabled.  Set to constant 2M in case the HUGEPAGE
  * value is unexpected high (which would cause VM over-reservation).
  */
-#define BASE_BLOCK_MIN_ALIGN ((size_t)2 << 20)
+#  define BASE_BLOCK_MIN_ALIGN ((size_t)2 << 20)
+#endif
 
 enum metadata_thp_mode_e {
 	metadata_thp_disabled = 0,
